@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="cn.edu.whut.sept.zuul.ui.GameController">
+    <top>
+        <HBox styleClass="header-bar" spacing="12" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="12" right="16" bottom="12" left="16"/>
+            </padding>
+            <Label text="祖尔世界" styleClass="title-label"/>
+            <Label fx:id="playerNameLabel" text="玩家" styleClass="muted-label"/>
+        </HBox>
+    </top>
+
+    <center>
+        <HBox spacing="12">
+            <padding>
+                <Insets top="8" right="16" bottom="8" left="16"/>
+            </padding>
+            <VBox spacing="8" HBox.hgrow="ALWAYS">
+                <Label text="当前房间" styleClass="section-label"/>
+                <TextArea fx:id="roomDescriptionArea" editable="false" wrapText="true"
+                          prefRowCount="8" styleClass="room-area"/>
+                <Label text="出口方向" styleClass="section-label"/>
+                <FlowPane fx:id="directionPane" hgap="8" vgap="8"/>
+                <Label text="房间物品（选中后点拾取）" styleClass="section-label"/>
+                <ListView fx:id="roomItemsList" prefHeight="120"/>
+                <HBox spacing="8">
+                    <Button text="拾取" onAction="#onTakeSelected" styleClass="action-button"/>
+                    <Button text="查看物品" onAction="#onItems" styleClass="action-button"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="8" prefWidth="280">
+                <Label text="背包" styleClass="section-label"/>
+                <ListView fx:id="inventoryList" prefHeight="160" VBox.vgrow="ALWAYS"/>
+                <ProgressBar fx:id="weightBar" prefWidth="260"/>
+                <Label fx:id="weightLabel" text="负重" styleClass="muted-label"/>
+                <HBox spacing="8">
+                    <Button text="丢弃" onAction="#onDropSelected" styleClass="action-button"/>
+                    <Button text="全部丢弃" onAction="#onDropAll" styleClass="action-button"/>
+                </HBox>
+                <Button text="吃魔法饼干" onAction="#onEatCookie" styleClass="accent-button"/>
+                <HBox spacing="8">
+                    <Button text="存档" onAction="#onSave" styleClass="action-button"/>
+                    <Button text="读档" onAction="#onLoad" styleClass="action-button"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </center>
+
+    <bottom>
+        <VBox spacing="8">
+            <padding>
+                <Insets top="8" right="16" bottom="16" left="16"/>
+            </padding>
+            <Label text="游戏日志" styleClass="section-label"/>
+            <TextArea fx:id="logArea" editable="false" wrapText="true" prefRowCount="6"
+                      styleClass="log-area"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="commandField" promptText="输入命令，如：去 东 / 拾取 钥匙"
+                           HBox.hgrow="ALWAYS" onAction="#onExecuteCommand"/>
+                <Button text="执行" onAction="#onExecuteCommand" styleClass="accent-button"/>
+                <Button text="帮助" onAction="#onHelp"/>
+                <Button text="环顾" onAction="#onLook"/>
+                <Button text="返回" onAction="#onBack"/>
+                <Button text="退出" onAction="#onQuit" styleClass="danger-button"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

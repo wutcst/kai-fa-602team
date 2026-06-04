@@ -1,13 +1,11 @@
-package cn.edu.whut.sept.zuul;
+package cn.edu.whut.sept.zuul.command;
+
+import cn.edu.whut.sept.zuul.engine.CommandResult;
+import cn.edu.whut.sept.zuul.engine.GameEngine;
 
 public abstract class Command
 {
     private String secondWord;
-
-    public Command()
-    {
-        secondWord = null;
-    }
 
     public String getSecondWord()
     {
@@ -16,7 +14,7 @@ public abstract class Command
 
     public boolean hasSecondWord()
     {
-        return secondWord != null;
+        return secondWord != null && !secondWord.isBlank();
     }
 
     public void setSecondWord(String secondWord)
@@ -24,5 +22,5 @@ public abstract class Command
         this.secondWord = secondWord;
     }
 
-    public abstract boolean execute(Game game);
+    public abstract CommandResult execute(GameEngine engine);
 }
