@@ -38,6 +38,11 @@ public class Inventory
         return Collections.unmodifiableList(items);
     }
 
+    public void clear()
+    {
+        items.clear();
+    }
+
     public boolean canAdd(Item item)
     {
         return getTotalWeight() + item.getWeight() <= maxWeight;

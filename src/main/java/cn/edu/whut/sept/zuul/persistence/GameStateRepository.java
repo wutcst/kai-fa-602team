@@ -1,5 +1,6 @@
 package cn.edu.whut.sept.zuul.persistence;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -18,4 +19,6 @@ public interface GameStateRepository
     boolean exists(String slotId) throws PersistenceException;
 
     void delete(String slotId) throws PersistenceException;
+
+    List<SaveSlotSummary> listSaves() throws PersistenceException;
 }

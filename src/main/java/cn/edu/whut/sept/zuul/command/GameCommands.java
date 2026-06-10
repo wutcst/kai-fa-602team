@@ -16,9 +16,10 @@ public final class GameCommands
     public static final String EAT = "吃";
     public static final String SAVE = "存档";
     public static final String LOAD = "读档";
+    public static final String DELETE_SAVE = "删档";
+    public static final String LIST_SAVES = "存档列表";
 
     public static final String EAT_COOKIE_ARG = "魔法饼干";
-    public static final String DEFAULT_SAVE_SLOT = "默认";
 
     private GameCommands()
     {

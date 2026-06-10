@@ -12,6 +12,8 @@ import cn.edu.whut.sept.zuul.persistence.GameSnapshot;
 import cn.edu.whut.sept.zuul.persistence.GameStateRepository;
 import cn.edu.whut.sept.zuul.persistence.InMemoryGameStateRepository;
 import cn.edu.whut.sept.zuul.persistence.PersistenceException;
+import cn.edu.whut.sept.zuul.persistence.SaveSlotSummary;
+import cn.edu.whut.sept.zuul.persistence.jdbc.ItemCatalog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,13 +38,20 @@ public class GameEngine
     private final CommandWords commandWords;
     private final Parser parser;
     private final GameStateRepository stateRepository;
+    private final ItemCatalog itemCatalog;
 
     public GameEngine()
     {
-        this(new World(), "探险者", new InMemoryGameStateRepository());
+        this(new World(), "探险者", new InMemoryGameStateRepository(), null);
     }
 
     public GameEngine(World world, String playerName, GameStateRepository stateRepository)
+    {
+        this(world, playerName, stateRepository, null);
+    }
+
+    public GameEngine(World world, String playerName, GameStateRepository stateRepository,
+                      ItemCatalog itemCatalog)
     {
         this.world = world;
         this.player = new Player(playerName, world.getStartRoom(), DEFAULT_MAX_WEIGHT);
@@ -50,6 +59,7 @@ public class GameEngine
         this.commandWords = new CommandWords();
         this.parser = new Parser();
         this.stateRepository = stateRepository;
+        this.itemCatalog = itemCatalog;
     }
 
     public Player getPlayer()
@@ -250,12 +260,57 @@ public class GameEngine
         return snapshot;
     }
 
-    public CommandResult saveGame(String slotId)
+    public static final int MAX_SLOT_NAME_LENGTH = 32;
+
+    public Optional<String> validateSlotName(String slotId)
+    {
+        if (slotId == null || slotId.isBlank()) {
+            return Optional.of("存档名称不能为空。");
+        }
+        String trimmed = slotId.trim();
+        if (trimmed.length() > MAX_SLOT_NAME_LENGTH) {
+            return Optional.of("存档名称不能超过 " + MAX_SLOT_NAME_LENGTH + " 个字符。");
+        }
+        return Optional.empty();
+    }
+
+    public List<SaveSlotSummary> listSaveSummaries() throws PersistenceException
+    {
+        return stateRepository.listSaves();
+    }
+
+    public CommandResult listSaves()
     {
         try {
-            stateRepository.save(slotId, createSnapshot());
+            List<SaveSlotSummary> saves = stateRepository.listSaves();
+            if (saves.isEmpty()) {
+                return CommandResult.ongoingWithoutStateChange(
+                        Collections.singletonList("暂无存档。"));
+            }
+            List<String> lines = new ArrayList<>();
+            lines.add("=== 存档列表 ===");
+            for (SaveSlotSummary save : saves) {
+                lines.add(formatSaveSummary(save));
+            }
+            return CommandResult.ongoingWithoutStateChange(lines);
+        } catch (PersistenceException e) {
             return CommandResult.ongoingWithoutStateChange(
-                    Collections.singletonList("游戏已保存到槽位: " + slotId));
+                    Collections.singletonList("读取存档列表失败: " + e.getMessage()));
+        }
+    }
+
+    public CommandResult saveGame(String slotId)
+    {
+        Optional<String> validationError = validateSlotName(slotId);
+        if (validationError.isPresent()) {
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList(validationError.get()));
+        }
+        String normalizedSlot = slotId.trim();
+        try {
+            stateRepository.save(normalizedSlot, createSnapshot());
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList("游戏已保存为: 「" + normalizedSlot + "」"));
         } catch (PersistenceException e) {
             return CommandResult.ongoingWithoutStateChange(
                     Collections.singletonList("保存失败: " + e.getMessage()));
@@ -264,16 +319,22 @@ public class GameEngine
 
     public CommandResult loadGame(String slotId)
     {
+        Optional<String> validationError = validateSlotName(slotId);
+        if (validationError.isPresent()) {
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList(validationError.get()));
+        }
+        String normalizedSlot = slotId.trim();
         try {
-            Optional<GameSnapshot> snapshotOpt = stateRepository.load(slotId);
+            Optional<GameSnapshot> snapshotOpt = stateRepository.load(normalizedSlot);
             if (snapshotOpt.isEmpty()) {
                 return CommandResult.ongoingWithoutStateChange(
-                        Collections.singletonList("存档位不存在: " + slotId));
+                        Collections.singletonList("存档不存在: 「" + normalizedSlot + "」"));
             }
             applySnapshot(snapshotOpt.get());
             roomHistory.clear();
             return CommandResult.ongoing(Arrays.asList(
-                    "已读取存档: " + slotId,
+                    "已读取存档: 「" + normalizedSlot + "」",
                     player.getCurrentRoom().getLongDescription()));
         } catch (PersistenceException e) {
             return CommandResult.ongoingWithoutStateChange(
@@ -281,17 +342,83 @@ public class GameEngine
         }
     }
 
-    private void applySnapshot(GameSnapshot snapshot)
+    public CommandResult deleteGame(String slotId)
     {
+        Optional<String> validationError = validateSlotName(slotId);
+        if (validationError.isPresent()) {
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList(validationError.get()));
+        }
+        String normalizedSlot = slotId.trim();
+        try {
+            if (!stateRepository.exists(normalizedSlot)) {
+                return CommandResult.ongoingWithoutStateChange(
+                        Collections.singletonList("存档不存在: 「" + normalizedSlot + "」"));
+            }
+            stateRepository.delete(normalizedSlot);
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList("已删除存档: 「" + normalizedSlot + "」"));
+        } catch (PersistenceException e) {
+            return CommandResult.ongoingWithoutStateChange(
+                    Collections.singletonList("删除失败: " + e.getMessage()));
+        }
+    }
+
+    public boolean saveExists(String slotId) throws PersistenceException
+    {
+        return stateRepository.exists(slotId.trim());
+    }
+
+    private String formatSaveSummary(SaveSlotSummary save)
+    {
+        String roomName = findRoomById(save.getCurrentRoomId()) != null
+                ? findRoomById(save.getCurrentRoomId()).getDescription()
+                : save.getCurrentRoomId();
+        String time = save.getSavedAt() != null ? save.getSavedAt().toString().replace('T', ' ') : "未知时间";
+        return String.format("「%s」| 玩家:%s | 房间:%s | %s",
+                save.getSlotId(), save.getPlayerName(), roomName, time);
+    }
+
+    private void applySnapshot(GameSnapshot snapshot) throws PersistenceException
+    {
+        restoreWorldItems(snapshot);
+        restoreCarriedItems(snapshot);
+
         Room target = findRoomById(snapshot.getCurrentRoomId());
         if (target != null) {
             player.setCurrentRoom(target);
         }
-        player.getInventory().setMaxWeight(snapshot.getMaxCarryWeight());
-        if (snapshot.isAteMagicCookie()) {
-            player.eatMagicCookie(snapshot.getMaxCarryWeight());
+        player.restoreCarryState(snapshot.getMaxCarryWeight(), snapshot.isAteMagicCookie());
+    }
+
+    private void restoreWorldItems(GameSnapshot snapshot) throws PersistenceException
+    {
+        for (Room room : world.getRooms()) {
+            room.clearItems();
         }
-        // 完整快照恢复需数据库组员维护物品模板表；此处保留接口供扩展
+        if (itemCatalog == null || snapshot.getRoomItemNamesByRoomId() == null) {
+            return;
+        }
+        for (Map.Entry<String, List<String>> entry : snapshot.getRoomItemNamesByRoomId().entrySet()) {
+            Room room = findRoomById(entry.getKey());
+            if (room == null || entry.getValue() == null) {
+                continue;
+            }
+            for (String itemName : entry.getValue()) {
+                itemCatalog.createItem(itemName).ifPresent(room::addItem);
+            }
+        }
+    }
+
+    private void restoreCarriedItems(GameSnapshot snapshot) throws PersistenceException
+    {
+        player.getInventory().clear();
+        if (itemCatalog == null || snapshot.getCarriedItemNames() == null) {
+            return;
+        }
+        for (String itemName : snapshot.getCarriedItemNames()) {
+            itemCatalog.createItem(itemName).ifPresent(player.getInventory()::add);
+        }
     }
 
     private Room findRoomById(String id)

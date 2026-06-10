@@ -23,6 +23,8 @@ public class CommandWords
         register(GameCommands.EAT, new EatCookieCommand());
         register(GameCommands.SAVE, new SaveCommand());
         register(GameCommands.LOAD, new LoadCommand());
+        register(GameCommands.DELETE_SAVE, new DeleteSaveCommand());
+        register(GameCommands.LIST_SAVES, new ListSavesCommand());
     }
 
     private void register(String name, Command command)

@@ -73,6 +73,11 @@ public class Room
         items.add(item);
     }
 
+    public void clearItems()
+    {
+        items.clear();
+    }
+
     public List<Item> getItems()
     {
         return Collections.unmodifiableList(items);

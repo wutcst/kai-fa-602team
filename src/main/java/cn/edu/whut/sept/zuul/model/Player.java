@@ -48,4 +48,13 @@ public class Player
         ateMagicCookie = true;
         inventory.setMaxWeight(newMaxWeight);
     }
+
+    /**
+     * 从存档快照恢复负重与魔法饼干状态。
+     */
+    public void restoreCarryState(double maxWeight, boolean ateCookie)
+    {
+        ateMagicCookie = ateCookie;
+        inventory.setMaxWeight(maxWeight);
+    }
 }

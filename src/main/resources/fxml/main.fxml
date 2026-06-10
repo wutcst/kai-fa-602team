@@ -48,6 +48,7 @@
                 <HBox spacing="8">
                     <Button text="存档" onAction="#onSave" styleClass="action-button"/>
                     <Button text="读档" onAction="#onLoad" styleClass="action-button"/>
+                    <Button text="删档" onAction="#onDeleteSave" styleClass="danger-button"/>
                 </HBox>
             </VBox>
         </HBox>

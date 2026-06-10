@@ -1,0 +1,21 @@
+﻿{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Zuul (JavaFX)",
+            "request": "launch",
+            "mainClass": "cn.edu.whut.sept.zuul.Main",
+            "projectName": "zuul",
+            "vmArgs": "--add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
+            "name": "Zuul (Console)",
+            "request": "launch",
+            "mainClass": "cn.edu.whut.sept.zuul.Main",
+            "projectName": "zuul",
+            "args": "--console"
+        }
+    ]
+}

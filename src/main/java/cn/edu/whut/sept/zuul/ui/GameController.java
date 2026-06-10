@@ -1,12 +1,16 @@
 package cn.edu.whut.sept.zuul.ui;
 
+import cn.edu.whut.sept.zuul.GameBootstrap;
 import cn.edu.whut.sept.zuul.command.GameCommands;
 import cn.edu.whut.sept.zuul.engine.CommandResult;
 import cn.edu.whut.sept.zuul.engine.GameEngine;
+import cn.edu.whut.sept.zuul.persistence.PersistenceException;
+import cn.edu.whut.sept.zuul.settings.I18n;
 import cn.edu.whut.sept.zuul.model.Item;
 import cn.edu.whut.sept.zuul.model.Player;
 import cn.edu.whut.sept.zuul.model.Room;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -36,11 +40,38 @@ public class GameController
     @FXML private TextField commandField;
 
     private GameEngine engine;
+    private I18n i18n;
 
     public void init()
     {
-        engine = new GameEngine();
-        playerNameLabel.setText("玩家: " + engine.getPlayer().getName());
+        appendLog("正在初始化游戏...");
+        Task<Void> bootstrapTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception
+            {
+                GameBootstrap bootstrap = GameBootstrap.createDefault();
+                engine = bootstrap.createGameEngine();
+                i18n = bootstrap.createI18n();
+                return null;
+            }
+        };
+        bootstrapTask.setOnSucceeded(event -> finishStartup());
+        bootstrapTask.setOnFailed(event -> {
+            Throwable error = bootstrapTask.getException();
+            String message = error != null && error.getCause() != null
+                    ? error.getCause().getMessage()
+                    : (error != null ? error.getMessage() : "未知错误");
+            appendLog("数据库初始化失败: " + message);
+            engine = new GameEngine();
+            i18n = new I18n("zh_CN");
+            finishStartup();
+        });
+        new Thread(bootstrapTask, "game-bootstrap").start();
+    }
+
+    private void finishStartup()
+    {
+        playerNameLabel.setText(i18n.format("player.label", engine.getPlayer().getName()));
         appendLog(engine.getWelcomeMessage());
         refreshView();
     }
@@ -119,13 +150,19 @@ public class GameController
     @FXML
     private void onSave()
     {
-        runCommand(GameCommands.SAVE + " " + GameCommands.DEFAULT_SAVE_SLOT);
+        SaveSlotsDialog.showSaveDialog(commandField.getScene().getWindow(), engine, this::applyCommandResult);
     }
 
     @FXML
     private void onLoad()
     {
-        runCommand(GameCommands.LOAD + " " + GameCommands.DEFAULT_SAVE_SLOT);
+        SaveSlotsDialog.showLoadDialog(commandField.getScene().getWindow(), engine, this::applyCommandResult);
+    }
+
+    @FXML
+    private void onDeleteSave()
+    {
+        SaveSlotsDialog.showDeleteDialog(commandField.getScene().getWindow(), engine, this::applyCommandResult);
     }
 
     @FXML
@@ -139,7 +176,11 @@ public class GameController
     private void runCommand(String commandLine)
     {
         appendLog("> " + commandLine);
-        CommandResult result = engine.processCommandLine(commandLine);
+        applyCommandResult(engine.processCommandLine(commandLine));
+    }
+
+    private void applyCommandResult(CommandResult result)
+    {
         appendLog(result.getMessageText());
         if (result.isStateChanged()) {
             refreshView();
@@ -173,9 +214,13 @@ public class GameController
         double max = player.getInventory().getMaxWeight();
         double current = player.getInventory().getTotalWeight();
         weightBar.setProgress(max <= 0 ? 0 : Math.min(1.0, current / max));
-        weightLabel.setText(String.format("负重: %.1f / %.1f 千克", current, max));
+        String weightText = i18n != null
+                ? i18n.format("weight.label", current, max)
+                : String.format("负重: %.1f / %.1f 千克", current, max);
+        weightLabel.setText(weightText);
         if (player.hasEatenMagicCookie()) {
-            weightLabel.setText(weightLabel.getText() + "  [已食用魔法饼干]");
+            weightLabel.setText(weightLabel.getText()
+                    + (i18n != null ? i18n.get("cookie.eaten") : "  [已食用魔法饼干]"));
         }
     }
 

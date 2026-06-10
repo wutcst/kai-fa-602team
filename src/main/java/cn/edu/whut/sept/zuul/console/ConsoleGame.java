@@ -1,8 +1,10 @@
 package cn.edu.whut.sept.zuul.console;
 
+import cn.edu.whut.sept.zuul.GameBootstrap;
 import cn.edu.whut.sept.zuul.command.GameCommands;
 import cn.edu.whut.sept.zuul.engine.CommandResult;
 import cn.edu.whut.sept.zuul.engine.GameEngine;
+import cn.edu.whut.sept.zuul.persistence.PersistenceException;
 
 import java.util.Scanner;
 
@@ -15,7 +17,17 @@ public class ConsoleGame
 
     public ConsoleGame()
     {
-        engine = new GameEngine();
+        engine = createEngine();
+    }
+
+    private static GameEngine createEngine()
+    {
+        try {
+            return GameBootstrap.createDefault().createGameEngine();
+        } catch (PersistenceException e) {
+            System.err.println("数据库初始化失败，使用内存存档: " + e.getMessage());
+            return new GameEngine();
+        }
     }
 
     public void play()
