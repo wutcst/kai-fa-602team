@@ -1,0 +1,62 @@
+.root {
+    -fx-font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f4f6f8;
+}
+
+.header-bar {
+    -fx-background-color: linear-gradient(to right, #1e3a5f, #2d5a87);
+}
+
+.title-label {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.muted-label {
+    -fx-text-fill: #d0e4ff;
+}
+
+.section-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e3a5f;
+}
+
+.room-area, .log-area {
+    -fx-control-inner-background: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #c5d0dc;
+    -fx-border-radius: 6;
+}
+
+.direction-button {
+    -fx-background-color: #2d5a87;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 18;
+    -fx-padding: 8 16 8 16;
+    -fx-cursor: hand;
+}
+
+.direction-button:hover {
+    -fx-background-color: #3a6fa3;
+}
+
+.action-button {
+    -fx-background-color: #e8eef4;
+    -fx-text-fill: #1e3a5f;
+    -fx-background-radius: 4;
+}
+
+.accent-button {
+    -fx-background-color: #2d8a5e;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+}
+
+.danger-button {
+    -fx-background-color: #b33a3a;
+    -fx-text-fill: white;
+    -fx-background-radius: 4;
+}
