@@ -1,5 +1,6 @@
 package cn.edu.whut.sept.zuul.engine;
 
+<<<<<<< HEAD
 import cn.edu.whut.sept.zuul.model.Item;
 import cn.edu.whut.sept.zuul.model.Player;
 import cn.edu.whut.sept.zuul.model.Room;
@@ -425,3 +426,39 @@ class GameEngineTest {
         assertEquals(32, GameEngine.MAX_SLOT_NAME_LENGTH);
     }
 }
+=======
+import cn.edu.whut.sept.zuul.model.World;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GameEngineTest
+{
+    @Test
+    void goEastFromOutsideReachesTheater()
+    {
+        GameEngine engine = new GameEngine();
+        CommandResult result = engine.go(World.DIR_EAST);
+        assertFalse(result.isFinished());
+        assertTrue(result.getMessageText().contains("演讲厅"));
+    }
+
+    @Test
+    void backReturnsToPreviousRoom()
+    {
+        GameEngine engine = new GameEngine();
+        engine.go(World.DIR_EAST);
+        CommandResult back = engine.back();
+        assertTrue(back.getMessageText().contains("主入口"));
+    }
+
+    @Test
+    void processCommandLineAcceptsChineseCommands()
+    {
+        GameEngine engine = new GameEngine();
+        CommandResult result = engine.processCommandLine("去 东");
+        assertTrue(result.getMessageText().contains("演讲厅"));
+    }
+}
+>>>>>>> 210fdf462ccacad1294a3b412c05a259a656f9cf

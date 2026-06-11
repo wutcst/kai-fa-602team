@@ -2,4 +2,8 @@
     "java.configuration.updateBuildConfiguration": "automatic",
     "java.jdt.ls.java.home": "C:\\Program Files\\Microsoft\\jdk-17.0.8.7-hotspot",
     "java.import.maven.enabled": true
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 210fdf462ccacad1294a3b412c05a259a656f9cf

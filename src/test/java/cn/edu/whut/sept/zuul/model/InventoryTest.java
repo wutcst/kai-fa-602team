@@ -1,5 +1,6 @@
 package cn.edu.whut.sept.zuul.model;
 
+<<<<<<< HEAD
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,3 +126,20 @@ public class InventoryTest {
         assertEquals("（空）", inventory.describe());
     }
 }
+=======
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InventoryTest
+{
+    @Test
+    void rejectsItemWhenOverWeightLimit()
+    {
+        Inventory inventory = new Inventory(5);
+        assertTrue(inventory.add(new Item("轻物", "轻", 3)));
+        assertFalse(inventory.add(new Item("重物", "重", 3)));
+    }
+}
+>>>>>>> 210fdf462ccacad1294a3b412c05a259a656f9cf
