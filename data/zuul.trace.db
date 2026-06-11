@@ -1,0 +1,13 @@
+2026-06-11 21:14:34.587968+08:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]<<<<<<< HEAD\000a=======\000a<<<<<<< HEAD\000a>>>>>>> dadf773dd01b0e2dd44441516f346f11ed66586a\000a-- 物品模板表：读档时根据名称还原完整 Item 对象\000aCREATE TABLE IF NOT EXISTS item_catalog (\000a    item_name       VARCHAR(64) PRIMARY KEY,\000a    description     VARCHAR(255) NOT NULL,\000a    weight          DOUBLE NOT NULL,\000a    magic_cookie    BOOLEAN NOT NULL DEFAULT FALSE\000a)"; SQL statement:
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dadf773dd01b0e2dd44441516f346f11ed66586a
+-- 物品模板表：读档时根据名称还原完整 Item 对象
+CREATE TABLE IF NOT EXISTS item_catalog (
+    item_name       VARCHAR(64) PRIMARY KEY,
+    description     VARCHAR(255) NOT NULL,
+    weight          DOUBLE NOT NULL,
+    magic_cookie    BOOLEAN NOT NULL DEFAULT FALSE
+) [42000-224]
